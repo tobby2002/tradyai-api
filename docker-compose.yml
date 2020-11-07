@@ -1,0 +1,58 @@
+version: '3'
+services:
+  gekko:
+    build: ./
+    volumes:
+      - ./volumes/gekko/history:/usr/src/app/history
+      - ./config.js:/usr/src/app/config.js
+      # added by neo
+      - ./core:/usr/src/app/core
+      - ./exchange:/usr/src/app/exchenge
+      - ./importers:/usr/src/app/importers
+      - ./logs:/usr/src/app/logs
+      - ./plugins:/usr/src/app/plugins
+      - ./test:/usr/src/app/test
+      - ./strategies:/usr/src/app/strategies
+      - ./web:/usr/src/app/web
+#      - ./:/usr/src/app
+    links:
+      - redis
+      - postgresql
+    environment:
+     - HOST
+     - PORT
+     - USE_SSL
+    ports: # you can comment this out when using the nginx frontend
+      - "${PORT}:${PORT}"
+## optionally set nginx vars if you wish to frontend it with nginx
+#    environment:
+#     - VIRTUAL_HOST=gekko
+#     - PORT=3000
+#     - DOMAIN=gekko
+
+  redis:
+    image: redis:latest
+    volumes:
+      - ./volumes/redis:/data
+## optionally uncomment if you wish to use nginx as a frontend
+#  nginx:
+#    restart: always
+#    image: jwilder/nginx-proxy
+#    ports:
+#     - "80:80"
+#    volumes:
+#     - /var/run/docker.sock:/tmp/docker.sock:ro
+## optionally uncomment if you wish to use postgresql as a db
+  postgresql:
+    restart: always
+    image: postgres:9.6-alpine
+    ports:
+      - 5432:5432
+    volumes:
+      - ./_postgresql:/var/lib/postgresql/data
+      - ./_postgresql:/var/log
+      - ./_postgresql:/postgres/backup
+    environment:
+      POSTGRES_DB: gekko
+      POSTGRES_USER: neo
+      POSTGRES_PASSWORD: neo123
